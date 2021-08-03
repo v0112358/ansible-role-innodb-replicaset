@@ -9,10 +9,10 @@ Install and configure MySQL InnoDB ReplicaSet on your system.
 Example Inventory
 ------------
 ```
-[innodb-replicaset:children]
-innodb-replicaset-infra
+[innodb_replicaset:children]
+innodb_replicaset_infra
 
-[innodb-replicaset-infra]
+[innodb_replicaset_infra]
 innodb-replicaset-0               innodb_replicaset_role="primary" run_mysqlrouter="yes"
 innodb-replicaset-1               innodb_replicaset_role="secondary" run_mysqlrouter="yes"
 ```
@@ -23,6 +23,12 @@ Example Playbook
 ---
 - name: Deploy InnoDB ReplicaSet
   hosts: innodb-replicaset
+  pre_tasks:
+    - name: Verify Ansible meets InnoDB ReplicaSet requirements.
+      assert:
+        that: "ansible_version.full is version_compare('2.10.0', '>=')"
+        msg: >
+          "You must update Ansible to at least 2.10.0 to use this playbook"
   roles:
     - { role: innodb-replicaset, tags: innodb-replicaset }
 ```
