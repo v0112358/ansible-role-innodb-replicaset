@@ -44,7 +44,7 @@ platforms:
 provisioner:
   name: ansible
   ansible_args:
-    - --inventory=tests/inventory
+    - --inventory=../../tests/inventory
     - --skip-tags=update-etc-hosts
   config_options:
     defaults:
