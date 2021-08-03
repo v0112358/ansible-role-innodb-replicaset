@@ -8,6 +8,15 @@
     - innodb-replicaset-update-etc-hosts
     - update-etc-hosts
 
+- name: Get /github/workspace/tests/inventory
+  shell: >
+    cat /github/workspace/tests/inventory
+  register: inventory
+  changed_when: False
+
+- name: Debug ouput /github/workspace/tests/inventory
+  debug: var=inventory.stdout_lines
+
 - name: Print all available facts
   ansible.builtin.debug:
     var: ansible_facts
