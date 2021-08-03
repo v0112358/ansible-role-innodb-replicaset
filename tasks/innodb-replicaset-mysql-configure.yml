@@ -36,6 +36,7 @@
 - name: innodb-replicaset-mysql-configure | Get /etc/my.cnf
   shell: >
     cat /etc/my.cnf
+  changed_when: False
   register: get_my_cnf
 
 - name: innodb-replicaset-mysql-configure | Debug output /etc/my.cnf
