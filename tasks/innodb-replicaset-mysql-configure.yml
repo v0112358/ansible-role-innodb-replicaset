@@ -42,6 +42,15 @@
 - name: innodb-replicaset-mysql-configure | Debug output /etc/my.cnf
   debug: var=get_my_cnf.stdout_lines
 
+- name: innodb-replicaset-mysql-configure | Get SElinux status
+  shell: >
+    getenforce
+  changed_when: False
+  register: selinux_status
+
+- name: innodb-replicaset-mysql-configure | Debug ouput Selinux status
+  debug: var=selinux_status.stdout_lines
+
 - name: innodb-replicaset-mysql-configure | Initialize MySQL data directory
   command:
     cmd: mysqld --defaults-file=/etc/my.cnf --initialize-insecure --user=mysql
