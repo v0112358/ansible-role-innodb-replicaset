@@ -1,0 +1,13 @@
+---
+- name: Print all available facts
+  ansible.builtin.debug:
+    var: ansible_facts
+
+- name: innodb-replicaset-update-etc-hosts | Update /etc/hosts
+  template:
+    src: etc/hosts.j2
+    dest: /etc/hosts
+    owner: root
+    group: root
+    mode: 0644
+    backup: yes

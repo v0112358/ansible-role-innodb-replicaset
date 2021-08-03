@@ -1,0 +1,27 @@
+---
+- name: innodb-replicaset-setup-replicaset | Deploy InnoDB ReplicaSet
+  block:
+    - name: innodb-replicaset-setup-replicaset | Upload setup script 
+      template:
+        src: innodb-replicaset/setupInnoDBReplicaSet.js.j2
+        dest: '/tmp/setupInnoDBReplicaSet.js'
+        owner: root
+        group: root
+        mode: 0644
+      changed_when: False
+
+    - name: innodb-replicaset-setup-replicaset | Create InnoDB ReplicaSet
+      shell: >
+        mysqlsh --file /tmp/setupInnoDBReplicaSet.js
+      register: setup_innodb_replicaset
+      changed_when: '"Instances successfully added to the replicaset" in setup_innodb_replicaset.stdout'
+
+    - name: innodb-replicaset-setup-replicaset | Debug output
+      debug: var=setup_innodb_replicaset.stdout_lines
+
+    - name: innodb-replicaset-setup-replicaset | Delete setup script 
+      file:
+        path: /tmp/setupInnoDBReplicaSet.js
+        state: absent
+      changed_when: False
+  when: innodb_replicaset_role is defined and innodb_replicaset_role == "primary"

@@ -1,0 +1,15 @@
+# {{ ansible_managed }}
+[Unit]
+Description=mysqlrouter-exporter
+Documentation=https://github.com/rluisr/mysqlrouter-exporter
+After=network-online.target
+
+[Service]
+Type=simple
+Environment="MYSQLROUTER_EXPORTER_URL=https://127.0.0.1:8443"
+Environment="MYSQLROUTER_EXPORTER_USER={{ mysqlrouter_exporter_username }}"
+Environment="MYSQLROUTER_EXPORTER_PASS={{ mysqlrouter_exporter_password }}"
+ExecStart=/usr/local/bin/mysqlrouter_exporter --skip-tls-verify
+
+[Install]
+WantedBy=multi-user.target

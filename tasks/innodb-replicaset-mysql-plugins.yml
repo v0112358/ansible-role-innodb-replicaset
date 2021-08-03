@@ -1,0 +1,20 @@
+---
+# MySQL/Percona server is not supported syntax INSTALL PLUGIN [IF NOT EXISTS] plugin_name SONAME 'plugin_library'
+
+- name: innodb-replicaset-mysql-plugins | Uninstall Percona Server plugins
+  shell: >
+    mysql -A -e "{{ item }}"
+  with_items: "{{ percona_server_plugins.uninstall }}"
+  register: percona_server_plugins_uninstall
+  failed_when: "'2003' in percona_server_plugins_uninstall.stderr"
+  changed_when: percona_server_plugins_install.rc == 0
+  when: percona_server_plugins.uninstall is defined
+
+- name: innodb-replicaset-mysql-plugins | Install Percona Server plugins
+  shell: >
+    mysql -A -e "{{ item }}"
+  with_items: "{{ percona_server_plugins.install }}"
+  register: percona_server_plugins_install
+  failed_when: "'2003' in percona_server_plugins_install.stderr"
+  changed_when: percona_server_plugins_install.rc == 0
+  when: percona_server_plugins.install is defined

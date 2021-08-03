@@ -1,0 +1,7 @@
+---
+- name: innodb-replicaset-create-application-databases| Create application databases
+  mysql_db:
+    login_unix_socket: "{{ percona_config.my_cnf.socket | default('/var/lib/mysql/mysql.sock') }}"
+    name: "{{ item.name }}"
+    state: "{{ item.state }}"
+  with_items: "{{ percona_server_application_databases }}"

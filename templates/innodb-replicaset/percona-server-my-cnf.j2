@@ -1,0 +1,107 @@
+# {{ ansible_managed }}
+# Optimized my.cnf configuration for MySQL/Percona Server
+
+[mysql]
+port = {{ percona_server_configuration.my_cnf.port | default('3307') }}
+socket = {{ percona_server_configuration.my_cnf.socket | default('/var/lib/mysql/mysql.sock') }}
+
+[mysqld]
+pid_file = {{ percona_server_configuration.my_cnf.pid_file | default('/var/run/mysqld/mysqld.pid') }}
+socket = {{ percona_server_configuration.my_cnf.socket | default('/var/lib/mysql/mysql.sock') }}
+datadir = {{ percona_server_configuration.my_cnf.datadir | default('/var/lib/mysql') }}
+user = {{ percona_server_configuration.my_cnf.user | default('mysql') }}
+
+bind_address = {{ percona_server_configuration.my_cnf.bind_address | default('0.0.0.0') }}
+port = {{ percona_server_configuration.my_cnf.port | default('3307') }}
+default_authentication_plugin = {{ percona_server_configuration.my_cnf.default_authentication_plugin | default('mysql_native_password') }}
+
+# Disable plugin
+blackhole = OFF
+archive = OFF
+federated = OFF
+
+# Monitor lock waits
+performance-schema-instrument = 'wait/lock/metadata/sql/mdl=ON'
+performance_schema = {{ percona_server_configuration.my_cnf.performance_schema | default('1') }}
+
+# Replication settings
+{% if percona_server_configuration.my_cnf.server_id_prefix is defined %}
+server_id = {{ percona_server_configuration.my_cnf.server_id_prefix }}{{ ansible_default_ipv4.address.split('.')[-1] }}
+{% else %}
+server_id = 1001
+{% endif %}
+log_bin = {{ percona_server_configuration.my_cnf.log_bin | default('mysql-bin') }}
+binlog_row_image = {{ percona_server_configuration.my_cnf.binlog_row_image | default('full') }}
+enforce_gtid_consistency = {{ percona_server_configuration.my_cnf.enforce_gtid_consistency | default('ON') }}
+gtid_mode = {{ percona_server_configuration.my_cnf.gtid_mode | default('ON') }}
+binlog_format = {{ percona_server_configuration.my_cnf.binlog_format | default('ROW') }}
+binlog_rows_query_log_events = {{ percona_server_configuration.my_cnf.binlog_rows_query_log_events | default('ON') }}
+slave_compressed_protocol = {{ percona_server_configuration.my_cnf.slave_compressed_protocol | default('ON') }}
+sync_binlog = {{ percona_server_configuration.my_cnf.sync_binlog | default('1') }}
+binlog_expire_logs_seconds = {{ percona_server_configuration.my_cnf.binlog_expire_logs_seconds | default('86400') }}
+binlog_transaction_compression_level_zstd = {{ percona_server_configuration.my_cnf.binlog_transaction_compression_level_zstd | default('3') }}
+binlog_transaction_compression = {{ percona_server_configuration.my_cnf.binlog_transaction_compression | default('0') }}
+binlog_transaction_dependency_tracking = {{ percona_server_configuration.my_cnf.binlog_transaction_dependency_tracking | default('WRITESET') }}
+relay_log = {{ percona_server_configuration.my_cnf.relay_log | default('mysql_relay_bin') }}
+slave_parallel_workers = {{ percona_server_configuration.my_cnf.slave_parallel_workers | default('4') }}
+slave_parallel_type = {{ percona_server_configuration.my_cnf.slave_parallel_type | default('LOGICAL_CLOCK') }}
+skip_slave_start = {{ percona_server_configuration.my_cnf.skip_slave_start | default('OFF') }}
+log_slave_updates = {{ percona_server_configuration.my_cnf.log_slave_updates | default('ON') }}
+slave_preserve_commit_order = {{ percona_server_configuration.my_cnf.slave_preserve_commit_order | default('ON') }}
+slave_rows_search_algorithms = {{ percona_server_configuration.my_cnf.slave_rows_search_algorithms | default('INDEX_SCAN,HASH_SCAN') }}
+{% if innodb_replicaset_role is defined and innodb_replicaset_role == "secondary" %}
+read_only = 1
+{% endif %}
+super_read_only = {{ percona_server_configuration.my_cnf.super_read_only | default('0') }}
+report_host = "{{ inventory_hostname }}"
+report_port = {{ percona_server_configuration.my_cnf.port | default('3307') }}
+master-info-repository = TABLE
+relay-log-info-repository = TABLE
+relay-log-recovery = 1
+
+# General settings
+character_set_server = {{ percona_server_configuration.my_cnf.character_set_server | default('UTF8MB4') }}
+collation_server = {{ percona_server_configuration.my_cnf.collation_server| default('utf8mb4_unicode_ci') }}
+event_scheduler = {{ percona_server_configuration.my_cnf.event_scheduler | default('OFF') }}
+skip_name_resolve
+skip_external_locking
+explicit_defaults_for_timestamp = {{ percona_server_configuration.my_cnf.explicit_defaults_for_timestamp | default('OFF') }}
+persisted_globals_load = {{ percona_server_configuration.my_cnf.persisted_globals_load | default('0') }}
+
+max_allowed_packet = {{ percona_server_configuration.my_cnf.max_allowed_packet | default('1G') }}
+max_connect_errors = {{ percona_server_configuration.my_cnf.max_connect_errors | default('1000000') }}
+sql_mode = {{ percona_server_configuration.my_cnf.sql_mode | default('NO_ENGINE_SUBSTITUTION') }}
+
+# InnoDB Settings
+default_storage_engine = {{ percona_server_configuration.my_cnf.default_storage_engine | default('InnoDB') }}
+innodb_data_file_path = {{ percona_server_configuration.my_cnf.innodb_data_file_path | default('ibdata1:100M:autoextend') }}
+{% if percona_server_configuration.my_cnf.innodb_dedicated_server is defined %}
+innodb_dedicated_server = {{ percona_server_configuration.my_cnf.innodb_dedicated_server | default('0') }}
+{% else %}
+innodb_buffer_pool_size = {{ percona_server_configuration.my_cnf.innodb_buffer_pool_size | default(( ansible_memory_mb.real.total / 1024 * 72 / 100 ) | round(1, 'ceil') | int) }}G
+innodb_log_file_size = {{ percona_server_configuration.my_cnf.innodb_log_file_size | default('1G') }}
+innodb_log_files_in_group = {{ percona_server_configuration.my_cnf.innodb_log_files_in_group | default(( ansible_memory_mb.real.total / 1024 * 72 / 100 / 4) | round(1, 'ceil') | int ) }}
+innodb_flush_method = {{ percona_server_configuration.my_cnf.innodb_flush_method | default('O_DIRECT') }}
+{% endif %}
+innodb_buffer_pool_instances = {{ percona_server_configuration.my_cnf.innodb_buffer_pool_instances | default(( ansible_memory_mb.real.total / 1024 * 72 / 100 / 2 ) | round(1, 'ceil') | int) }}
+innodb_file_per_table = {{ percona_server_configuration.my_cnf.innodb_file_per_table | default('1') }}
+innodb_flush_log_at_trx_commit = {{ percona_server_configuration.my_cnf.innodb_flush_log_at_trx_commit | default('2') }}
+
+# Extra config
+{% for key, value in percona_server_configuration.my_cnf_extra.items() -%}
+{{ key }} = {{ value }}
+{% endfor %}
+
+[mysqld_safe]
+log_error = /var/log/mysqld.log
+pid_file = /var/run/mysqld/mysqld.pid
+socket = /var/lib/mysql/mysql.sock
+open_files_limit = 1000000
+
+[mysqldump]
+quick
+quote_names
+max_allowed_packet = 1256M
+
+[mysqladmin]
+socket = {{ percona_server_configuration.my_cnf.socket | default('/var/lib/mysql/mysql.sock') }}

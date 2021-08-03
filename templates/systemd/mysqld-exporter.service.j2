@@ -1,0 +1,16 @@
+# {{ ansible_managed }}
+# /etc/systemd/system/mysql_exporter.service
+[Unit]
+Description=Mysql Exporter
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+User=mysql
+Group=mysql
+Type=simple
+Environment='DATA_SOURCE_NAME={{ mysqld_exporter_username }}:{{ mysqld_exporter_password }}@(127.0.0.1:{{ percona_server_configuration.my_cnf.port }})/'
+ExecStart=/usr/local/bin/mysqld_exporter --web.listen-address=0.0.0.0:9104 --collect.binlog_size --collect.info_schema.processlist --collect.info_schema.userstats --collect.global_variables --collect.global_status --collect.slave_status --collect.perf_schema.eventswaits --collect.info_schema.tablestats --collect.info_schema.schemastats --collect.info_schema.tables
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,21 @@
+---
+- name: Verify
+  hosts: all
+  become: true
+  gather_facts: false
+  tasks:
+    - name: Sample test 1 | Check query to MySQL instance
+      shell: >
+        mysql -A -e "SELECT 1"
+      register: sample_test_1
+      failed_when:
+        - '"1" not in sample_test_1.stdout'
+      when: innodb_replicaset_role is defined
+
+    - name: Sample test 2 | Check MySQL Router API users
+      shell: >
+        mysql -A -e "select * from mysql_innodb_cluster_metadata.router_rest_accounts"
+      register: sample_test_2
+      failed_when:
+        - '"modular_crypt_format" not in sample_test_2.stdout'
+      when: innodb_replicaset_role is defined

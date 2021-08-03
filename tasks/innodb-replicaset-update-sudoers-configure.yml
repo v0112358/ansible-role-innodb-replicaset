@@ -1,0 +1,9 @@
+---
+# By default MYSQL_PS1 not loading when run "sudo mysql"
+- name: innodb-replicaset-update-sudoers-configure | Correctly setting your mysql prompt using sudo
+  copy:
+    src: sudoers.d/user-mysql
+    dest: /etc/sudoers.d/user-mysql
+    mode: 0644
+    owner: "root"
+    group: "root"

@@ -1,0 +1,61 @@
+---
+- name: innodb-replicaset-setup-mysqlrouter | Check if mysqlrouter is running
+  shell: pgrep -a "^mysqlrouter$"
+  ignore_errors: yes
+  changed_when: False
+  register: mysqlrouter_proc_status
+
+- name: innodb-replicaset-setup-mysqlrouter | Begin setup MySQL Router
+  block:
+    - name: innodb-replicaset-setup-mysqlrouter | Bootstrap MySQL Router
+      shell: |-
+        echo "{{ mysqlrouter_password }}" | mysqlrouter \
+          --bootstrap {{ innodb_replicaset_cluster_admin }}:{{ innodb_replicaset_cluster_password }}@{{ groups[hostvars[inventory_hostname].group_names[-1]][0] }}:{{ percona_server_configuration.my_cnf.port  | default('3307') }} \
+          --account mysqlrouter \
+          --account-create if-not-exists \
+          --conf-bind-address {{ mysqlrouter_bind_address }} \
+          --connect-timeout {{ mysqlrouter_connect_timeout }} \
+          --read-timeout {{ mysqlrouter_read_timeout }} \
+          --user mysqlrouter
+      args:
+        creates: /etc/mysqlrouter/mysqlrouter.key
+        warn: false
+      register: bootstrapmysqlrouter
+      tags:
+        - bootstrapmysqlrouter
+
+    - name: innodb-replicaset-setup-mysqlrouter | Debug output
+      debug: var=bootstrapmysqlrouter.stdout_lines
+  
+  when: mysqlrouter_proc_status.rc != 0
+
+- name: innodb-replicaset-setup-mysqlrouter | Start MySQL Router
+  systemd:
+    name: mysqlrouter
+    daemon_reload: True
+    enabled: True
+    state: started
+
+- name: innodb-replicaset-setup-mysqlrouter | Upload /tmp/mysqlRouterStatus.js
+  template:
+    src: mysql-router/mysqlRouterStatus.js.j2
+    dest: /tmp/mysqlRouterStatus.js
+    owner: root
+    group: root
+    mode: 0644
+  changed_when: False
+
+- name: innodb-replicaset-setup-mysqlrouter | Get MySQL Router status
+  shell: >
+    mysqlsh --js --file /tmp/mysqlRouterStatus.js
+  changed_when: False
+  register: mysql_router_status
+
+- name: innodb-replicaset-setup-mysqlrouter | Debug output MySQL Router status
+  debug: var=mysql_router_status.stdout_lines
+
+- name: innodb-replicaset-setup-mysqlrouter | Delete /tmp/mysqlRouterStatus.js
+  file:
+    path: /tmp/mysqlRouterStatus.js
+    state: absent
+  changed_when: False

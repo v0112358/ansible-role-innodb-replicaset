@@ -1,0 +1,43 @@
+---
+- name: innodb-replicaset-mysqld-exporter | Check if mysqld_exporter already installed
+  stat: path=/usr/local/bin/mysqld_exporter
+  register: mysqld_exporter_bin
+
+- name: innodb-replicaset-mysqld-exporter | Begin install mysqld_exporter
+  block:
+    - name: innodb-replicaset-mysqld-exporter | Download mysqld_exporter release
+      get_url:
+        url: '{{ mysqld_exporter_packages.url }}'
+        dest: /usr/local/src/
+        checksum: '{{ mysqld_exporter_packages.checksum }}'
+      register: mysqld_exporter_src
+
+    - name: innodb-replicaset-mysqld-exporter | Extract mysqld_exporter-*.tar.gz
+      unarchive:
+        src: '{{ mysqld_exporter_src.dest }}'
+        remote_src: yes
+        dest: /usr/local/bin/
+        mode: 0755
+        owner: root
+        group: root
+        extra_opts: ['--strip', '1']
+
+    - name: innodb-replicaset-mysqld-exporter | Remove junk files
+      file:
+        path: /usr/local/bin/{{ item }}
+        state: absent
+      with_items:
+        - LICENSE
+        - NOTICE
+        - README.md
+
+  when: mysqld_exporter_bin.stat.exists == False
+
+- name: innodb-replicaset-mysqld-exporter | Create mysqld-exporter systemd service
+  template:
+    src: systemd/mysqld-exporter.service.j2
+    dest: '/usr/lib/systemd/system/mysqld-exporter.service'
+    owner: root
+    group: root
+    mode: 0644
+  notify: restart mysqld-exporter

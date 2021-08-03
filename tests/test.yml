@@ -1,0 +1,5 @@
+---
+- name: Deploy InnoDB ReplicaSet
+  hosts: innodb-replicaset
+  roles:
+    - { role: innodb-replicaset, tags: innodb-replicaset }

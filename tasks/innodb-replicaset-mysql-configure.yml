@@ -1,0 +1,46 @@
+---
+- name: innodb-replicaset-mysql-configure | Check if mysqld is running
+  shell: pgrep -a "^mysqld$"
+  ignore_errors: yes
+  changed_when: False
+  register: mysql_proc_status
+
+- name: innodb-replicaset-mysql-configure | Update /etc/my.cnf
+  template:
+    src: innodb-replicaset/percona-server-my-cnf.j2
+    dest: /etc/my.cnf
+    owner: root
+    group: root
+    mode: 0644
+    backup: yes
+  notify: "Warning file /etc/my.cnf has been changed"
+
+- name: innodb-replicaset-mysql-configure | Update /root/.my.cnf
+  template:
+    src: innodb-replicaset/percona-client-my-cnf.j2
+    dest: /root/.my.cnf
+    owner: root
+    group: root
+    mode: 0600
+    backup: yes
+
+- name: innodb-replicaset-mysql-configure | Update .mysqlsh/options.json
+  template:
+    src: mysql-shell/options.json.j2
+    dest: /root/.mysqlsh/options.json
+    owner: root
+    group: root
+    mode: 0600
+    backup: yes
+
+- name: innodb-replicaset-mysql-configure | Initialize MySQL data directory
+  command:
+    cmd: mysqld --defaults-file=/etc/my.cnf --initialize-insecure --user=mysql
+    creates: /var/lib/mysql/auto.cnf
+  when: mysql_proc_status.rc != 0
+
+- name: innodb-replicaset-mysql-configure | Ensures mysqld is started and enabled
+  systemd:
+    name: mysqld
+    state: started
+    enabled: yes

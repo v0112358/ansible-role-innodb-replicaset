@@ -1,0 +1,77 @@
+// {{ ansible_managed }}
+print('==================================\n');
+print('InnoDB ReplicaSet set up\n');
+print('==================================\n');
+print('Setting up a MySQL InnoDB ReplicaSet.\n\n');
+
+var dbClusterAdmin = "{{ innodb_replicaset_cluster_admin | default('rsadmin')}}";
+var dbClusterAdminPassword = "{{ innodb_replicaset_cluster_password | default('$Replica_pass')}}";
+var replicaSet = "{{ innodb_replicaset_name | default('rs_infra') }}";
+var dbHosts = [];
+var dbPort = "{{ percona_server_configuration.my_cnf.port | default('3307') }}";
+
+// Get all host in current group
+{% for host in groups[hostvars[inventory_hostname].group_names[-1]] %}
+dbHosts.push('{{ hostvars[host]['ansible_eth0']['ipv4']['address'] }}');
+{% endfor %}
+
+function sleep(milliseconds) {
+  const date = Date.now();
+  let currentDate = null;
+  do {
+      currentDate = Date.now();
+  } while (currentDate - date < milliseconds);
+}
+
+print('\nNumber of Hosts: ' + dbHosts.length + '\n');
+print('\nList of hosts:\n');
+for (let s = 0; s < dbHosts.length; s++) {
+    print('Host: ' + dbHosts[s] + ':' + dbPort + '\n');
+}
+
+function setupCluster() {
+  print('\nChecking current InnoDB ReplicaSet.\n');
+  shell.connect({ user: dbClusterAdmin, password: dbClusterAdminPassword, host: dbHosts[0], port: dbPort });
+
+  try {
+    var replicaSetStatus = dba.getReplicaSet();
+  } catch (e) {
+    println(e);
+    var isStandaloneInstance = True;
+  } finally {
+    if (isStandaloneInstance || !replicaSetStatus) {
+      print('\nConfiguring the instances.');
+      for (let n = 0; n < dbHosts.length; n++) {
+        print('\n=> ');
+        var configureReplicaSetResult = dba.configureReplicaSetInstance(dbClusterAdmin + ':' + dbClusterAdminPassword + '@' + dbHosts[n] + ':' + dbPort, {interactive: false, restart: true });
+        println(configureReplicaSetResult);
+      }
+
+      print('\nConfiguring Instances completed.\n\n');
+
+      sleep(5000);
+
+      print('Setting up InnoDB ReplicaSet.\n\n');
+      shell.connect({ user: dbClusterAdmin, password: dbClusterAdminPassword, host: dbHosts[0], port: dbPort });
+
+      var rs = dba.createReplicaSet(replicaSet);
+
+      print('Adding instances to the replicaset.\n');
+      for (let x = 1; x < dbHosts.length; x++) {
+          print('\n=> ');
+          rs.addInstance(dbClusterAdmin + ':' + dbClusterAdminPassword + '@' + dbHosts[x] + ':' + dbPort, { recoveryMethod: 'clone' });
+      }
+      print('\nInstances successfully added to the replicaset.\n');
+    } else {
+      print('\nInnoDB ReplicaSet has already deployed !\n');
+    }
+  }
+}
+
+try {
+    setupCluster();
+    print('\nInnoDB ReplicaSet deployed successfully.\n');
+} catch (e) {
+    print('\nThe InnoDB ReplicaSet could not be created.\n');
+    println(e);
+}

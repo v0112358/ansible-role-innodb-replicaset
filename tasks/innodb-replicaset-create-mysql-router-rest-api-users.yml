@@ -1,0 +1,27 @@
+---
+- name: innodb-replicaset-create-mysql-router-rest-api-users | Create MySQL Router REST API user
+  block:
+    - name: innodb-replicaset-create-mysql-router-rest-api-users | Upload mysql-shell script to create MySQL Router REST API user
+      template:
+        src: mysql-router/createRestUser.py.j2
+        dest: '/tmp/createRestUser.py'
+        owner: root
+        group: root
+        mode: 0644
+      changed_when: False
+      
+    - name: innodb-replicaset-create-mysql-router-rest-api-users | Run createRestUser.py
+      shell: >
+        mysqlsh "{{ innodb_replicaset_cluster_admin }}:{{ innodb_replicaset_cluster_password }}@127.0.0.1:{{ percona_server_configuration.my_cnf.port }}" --py --file /tmp/createRestUser.py
+      register: create_rest_mysql_router_api_user
+      changed_when: '"You can now use" in create_rest_mysql_router_api_user.stdout'
+      failed_when: '"ERROR" in create_rest_mysql_router_api_user.stdout'
+
+    - name: innodb-replicaset-create-mysql-router-rest-api-users  | Debug output
+      debug: var=create_rest_mysql_router_api_user.stdout_lines
+
+    - name: innodb-replicaset-create-mysql-router-rest-api-users  | Delete /tmp/createRestUser.py
+      file:
+        path: /tmp/createRestUser.py
+        state: absent
+      changed_when: False

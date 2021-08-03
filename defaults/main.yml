@@ -1,0 +1,133 @@
+---
+######### InnoDB ReplicaSet
+innodb_replicaset_cluster_admin: "rsadmin"
+innodb_replicaset_cluster_password: "*Replica_pass21_sample"
+innodb_replicaset_name: "rs_infra"
+
+######### MySQLRouter
+mysqlrouter_password: "*MysqlRouter_pass21_sample"
+mysqlrouter_connect_timeout: 10
+mysqlrouter_read_timeout: 10
+mysqlrouter_bind_address: 0.0.0.0
+
+######### Percona server
+percona_server_version: "8.0.25-15"
+percona_xtrabackup_version: "8.0.25-17"
+percona_server_root_password: "demozCYqkQsampleYRwiQ0n7demo"
+percona_server_packages:
+  percona_toolkit:
+    - https://downloads.percona.com/downloads/percona-toolkit/3.3.1/binary/redhat/7/x86_64/percona-toolkit-3.3.1-1.el7.x86_64.rpm
+
+  percona_xtrabackup:
+    - https://downloads.percona.com/downloads/Percona-XtraBackup-LATEST/Percona-XtraBackup-{{ percona_xtrabackup_version }}/binary/redhat/7/x86_64/percona-xtrabackup-80-{{ percona_xtrabackup_version }}.1.el7.x86_64.rpm
+
+  percona_server:
+    - https://downloads.percona.com/downloads/Percona-Server-LATEST/Percona-Server-{{ percona_server_version }}/binary/redhat/7/x86_64/percona-mysql-router-{{ percona_server_version }}.1.el7.x86_64.rpm
+    - https://downloads.percona.com/downloads/Percona-Server-LATEST/Percona-Server-{{ percona_server_version }}/binary/redhat/7/x86_64/percona-server-devel-{{ percona_server_version }}.1.el7.x86_64.rpm
+    - https://downloads.percona.com/downloads/Percona-Server-LATEST/Percona-Server-{{ percona_server_version }}/binary/redhat/7/x86_64/percona-server-server-{{ percona_server_version }}.1.el7.x86_64.rpm
+    - https://downloads.percona.com/downloads/Percona-Server-LATEST/Percona-Server-{{ percona_server_version }}/binary/redhat/7/x86_64/percona-server-shared-{{ percona_server_version }}.1.el7.x86_64.rpm
+    - https://downloads.percona.com/downloads/Percona-Server-LATEST/Percona-Server-{{ percona_server_version }}/binary/redhat/7/x86_64/percona-server-shared-compat-{{ percona_server_version }}.1.el7.x86_64.rpm
+    - https://downloads.percona.com/downloads/Percona-Server-LATEST/Percona-Server-{{ percona_server_version }}/binary/redhat/7/x86_64/percona-server-client-{{ percona_server_version }}.1.el7.x86_64.rpm
+    
+  percona_deps:
+    - https://repo.percona.com/release/7/RPMS/x86_64/qpress-11-1.el7.x86_64.rpm
+    - https://repo.percona.com/tools/yum/release/7/RPMS/x86_64/percona-mysql-shell-8.0.25-1.el7.x86_64.rpm
+    - nfs-utils
+    - mdadm
+    - zstd
+    - MySQL-python.x86_64
+    - perl-DBD-MySQL
+    - python2-PyMySQL
+    - python36-PyMySQL
+    - innotop
+    - git
+    - yum-plugin-versionlock
+
+percona_server_plugins:
+  uninstall: []
+  install:
+    - INSTALL PLUGIN clone SONAME 'mysql_clone.so'
+
+######### my.cnf settings
+percona_server_configuration:
+  my_cnf:
+    server_id_prefix: 101
+    port: 3307
+    bind_address: '0.0.0.0'
+    log_bin: 'mysql-bin'
+    binlog_format: 'ROW'
+    binlog_row_image: 'FULL'
+  my_cnf_extra:
+    innodb_io_capacity: 1000
+    innodb_io_capacity_max: 1000
+    max_connections: 1000
+    interactive_timeout: 28800
+    wait_timeout: 86400
+    connect_timeout: 10
+    net_read_timeout: 300
+    performance_schema: 1
+
+######## mysqld_exporter
+mysqld_exporter_username: "mysqld_exporter"
+mysqld_exporter_password: "umPPsampleF8gZvH"
+mysqld_exporter_packages:
+  url: 'https://github.com/prometheus/mysqld_exporter/releases/download/v0.13.0/mysqld_exporter-0.13.0.linux-amd64.tar.gz'
+  checksum: 'sha256:626584c5d1c0cf09982302763e69db24fabe5dc736e7b694a3f8fdfee3d8d9a2'
+
+######## mysqlrouter_exporter
+mysqlrouter_exporter_username: "mysqlrouter_exporter"
+mysqlrouter_exporter_password: "mysqlrouter_samplepass"
+mysqlrouter_exporter_packages:
+  url: 'https://github.com/rluisr/mysqlrouter_exporter/releases/download/v3.0.0/mysqlrouter_exporter_linux_x86_64.tar.gz'
+  checksum: 'sha256:ea7a819211a333b5146c9283d2520dd42196ca7efe135aa97f91e14bb1e00677'
+
+######### Systemd limit
+systemd_services:
+  mysqld:
+    LimitFSIZE: 'infinity'
+    LimitCPU: 'infinity'
+    LimitAS: 'infinity'
+    LimitNOFILE: 2000000
+    LimitNPROC: 2000000
+
+######### System users, e.g mysqld_exporter 
+percona_server_system_users:
+  - name: "{{ innodb_replicaset_cluster_admin }}"
+    password: "{{ innodb_replicaset_cluster_password }}"
+    encrypted: no
+    priv: "mysql_innodb_cluster_metadata_bkp.*:ALTER,ALTER ROUTINE,CREATE,CREATE ROUTINE,CREATE TEMPORARY TABLES,CREATE VIEW,DELETE,DROP,EVENT,EXECUTE,INDEX,INSERT,LOCK TABLES,REFERENCES,SHOW VIEW,TRIGGER,UPDATE,GRANT/mysql_innodb_cluster_metadata_previous.*:ALTER,ALTER ROUTINE,CREATE,CREATE ROUTINE,CREATE TEMPORARY TABLES,CREATE VIEW,DELETE,DROP,EVENT,EXECUTE,INDEX,INSERT,LOCK TABLES,REFERENCES,SHOW VIEW,TRIGGER,UPDATE,GRANT/mysql_innodb_cluster_metadata.*:ALTER,ALTER ROUTINE,CREATE,CREATE ROUTINE,CREATE TEMPORARY TABLES,CREATE VIEW,DELETE,DROP,EVENT,EXECUTE,INDEX,INSERT,LOCK TABLES,REFERENCES,SHOW VIEW,TRIGGER,UPDATE,GRANT/*.*:CREATE USER,EXECUTE,FILE,PROCESS,RELOAD,REPLICATION CLIENT,REPLICATION SLAVE,SELECT,SHUTDOWN,CLONE_ADMIN,CONNECTION_ADMIN,GROUP_REPLICATION_ADMIN,PERSIST_RO_VARIABLES_ADMIN,REPLICATION_APPLIER,REPLICATION_SLAVE_ADMIN,ROLE_ADMIN,SYSTEM_VARIABLES_ADMIN,GRANT/mysql.*:SELECT,DELETE,INSERT,UPDATE,GRANT/performance_schema.*:SELECT,GRANT"
+    host: "%"
+    state: present
+  - name: "{{ mysqlrouter_exporter_username }}"
+    password: "{{ mysqlrouter_password }}"
+    encrypted: no
+    priv: "mysql_innodb_cluster_metadata.*:EXECUTE,SELECT,DELETE,INSERT,UPDATE/performance_schema.*:SELECT"
+    host: "%"
+    state: present
+  - name: "{{ mysqld_exporter_username }}"
+    password: "{{ mysqld_exporter_password }}"
+    encrypted: no
+    priv: "*.*:PROCESS,REPLICATION CLIENT,SELECT"
+    host: "127.0.0.1"
+    state: present
+
+######### Change data capture (CDC) users, e.g dbz_wordpress_ro
+percona_server_change_data_capture_users:
+  - name: "dbz_wordpress_ro"
+    password: "*dbzwordpressPass1"
+    priv: "*.*:SELECT,RELOAD,SHOW DATABASES,REPLICATION SLAVE,REPLICATION CLIENT"
+    host: "127.0.0.1"
+    state: present
+
+######### Application databases, e.g wordpress_db
+percona_server_application_databases:
+  - name: "wordpress_db"
+    state: present
+
+######### Application users, e.g wordpress_rw
+percona_server_application_users:
+  - name: "wordpress_rw"
+    password: "*wordpressPass1"
+    priv: "wordpress_db.*:ALTER,CREATE,DELETE,INDEX,INSERT,REFERENCES,SELECT,UPDATE"
+    host: "127.0.0.1"
+    state: present

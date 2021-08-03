@@ -1,0 +1,29 @@
+---
+- name: systemd reload
+  systemd:
+    daemon_reload: yes
+
+- name: Warning file /etc/my.cnf has been changed
+  debug:
+    msg: "Warning: file /etc/my.cnf has been changed. Please review your change before restart mysqld."
+
+- name: restart mysqlrouter
+  systemd:
+    name: mysqlrouter
+    daemon_reload: True
+    enabled: True
+    state: restarted
+
+- name: restart mysqlrouter-exporter
+  systemd:
+    name: mysqlrouter-exporter
+    daemon_reload: True
+    enabled: True
+    state: restarted
+
+- name: restart mysqld-exporter
+  systemd:
+    name: mysqld-exporter
+    daemon_reload: True
+    enabled: True
+    state: restarted

@@ -1,0 +1,7 @@
+// {{ ansible_managed }}
+var dbClusterAdmin = "{{ innodb_replicaset_cluster_admin | default('rsadmin')}}";
+var dbClusterAdminPassword = "{{ innodb_replicaset_cluster_password | default('$Replica_pass')}}";
+var dbPort = "{{ percona_server_configuration.my_cnf.port | default('3307') }}";
+shell.connect({ user: dbClusterAdmin, password: dbClusterAdminPassword, host: 127.0.0.1, port: dbPort });
+rs = dba.getReplicaSet();
+println(rs.status());

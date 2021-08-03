@@ -1,0 +1,3 @@
+// {{ ansible_managed }}
+myrouter = router.create("{{ mysqlrouter_exporter_username }}:{{ mysqlrouter_exporter_password }}@127.0.0.1:8443");
+myrouter.status();

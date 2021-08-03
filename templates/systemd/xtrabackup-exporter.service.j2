@@ -1,0 +1,16 @@
+# {{ ansible_managed }}
+# /etc/systemd/system/mysql_exporter.service
+[Unit]
+Description=Mysql Exporter
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+User=mysql
+Group=mysql
+Type=simple
+Environment='DATA_SOURCE_NAME={{ mysqld_exporter_username }}:{{ mysqld_exporter_password }}@(127.0.0.1:{{ percona_server_configuration.my_cnf.port }})/'
+ExecStart=/xtrabackup_exporter  --web.listen-address=":9288" --collector.disable-defaults --web.disable-exporter-metrics --collector.textfile --collector.textfile.directory="/{{ corp }}/xtrabackup/output/
+
+[Install]
+WantedBy=multi-user.target

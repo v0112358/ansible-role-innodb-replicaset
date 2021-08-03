@@ -1,0 +1,90 @@
+---
+- name: innodb-replicaset-mysql-install | Check if mysqld is running
+  shell: pgrep -a "^mysqld$"
+  ignore_errors: yes
+  changed_when: False
+  register: mysql_proc_status
+  
+- name: innodb-replicaset-mysql-install | Check if Percona Server already installed
+  stat: path=/usr/sbin/mysqld
+  register: mysql_bin
+
+- name: innodb-replicaset-mysql-install | Begin install Percona Server
+  block:
+    - name: innodb-replicaset-mysql-install | Install InnoDB tools and dependency packages
+      yum:
+        name: "{{ percona_server_packages.percona_deps }}"
+        state: latest
+
+    - name: innodb-replicaset-mysql-install | Install Percona Server
+      yum:
+        name: "{{ percona_server_packages.percona_server }}"
+        state: latest
+
+    - name: innodb-replicaset-mysql-install | Install Percona Toolkit
+      yum:
+        name: "{{ percona_server_packages.percona_toolkit }}"
+        state: latest
+        update_cache: yes
+
+    - name: innodb-replicaset-mysql-install | Install Percona Xtrabackup
+      yum:
+        name: "{{ percona_server_packages.percona_xtrabackup }}"
+        state: latest
+
+    - name: innodb-replicaset-mysql-install | Prepare log path
+      file:
+        path: /var/log/mysql
+        state: directory
+        owner: mysql
+        group: mysql
+        mode: 0755
+      
+    - name: innodb-replicaset-mysql-install | Yum versionlock Percona*
+      command: yum versionlock percona* Percona* warn=no
+      changed_when: False
+
+  when: mysql_bin.stat.exists == False and mysql_proc_status.rc != 0
+
+- name: innodb-replicaset-mysql-install | Add Percona Server logrotate
+  copy:
+    src: percona_server.logrotate.conf
+    dest: /etc/logrotate.d/mysql
+    owner: root
+    group: root
+    mode: 0644
+  tags:
+    - update_logrorate_config
+
+- name: innodb-replicaset-mysql-install | Create a directory for the systemd service modification
+  file:
+    path: '/usr/lib/systemd/system/mysqld.service.d'
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+
+- name: innodb-replicaset-mysql-install | Update mysqld systemd resource limit
+  template:
+    src: systemd/custom.conf.j2
+    dest: '/usr/lib/systemd/system/mysqld.service.d/custom.conf'
+    owner: root
+    group: root
+    mode: 0644
+  with_dict: '{{ systemd_services }}'
+  notify: systemd reload
+  tags:
+    - update_mysqld_systemd_resource_limit
+
+- name: innodb-replicaset-mysql-install | Install mysqlshell-plugins
+  git:
+    repo: https://github.com/lefred/mysqlshell-plugins.git
+    dest: /root/.mysqlsh/plugins
+    version: master
+
+- name: innodb-replicaset-mysql-install | Install mysqlsh request module
+  shell: >
+    mysqlsh --pym pip install requests
+  register: mysqlsh_install_module_result
+  changed_when: "'Successfully installed' in mysqlsh_install_module_result.stdout"
+  failed_when: "'ERROR' in mysqlsh_install_module_result.stderr"

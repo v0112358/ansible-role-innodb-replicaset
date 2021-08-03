@@ -1,0 +1,144 @@
+---
+- import_tasks: innodb-replicaset-update-etc-hosts.yml
+  when:
+    - ansible_distribution == "CentOS" or ansible_distribution == "RedHat"
+    - ansible_distribution_major_version == '7'
+    - innodb_replicaset_role is defined or run_mysqlrouter is defined
+  tags:
+    - innodb-replicaset-update-etc-hosts
+    - update-etc-hosts
+
+- import_tasks: innodb-replicaset-mysql-install.yml
+  when:
+    - ansible_distribution == "CentOS" or ansible_distribution == "RedHat"
+    - ansible_distribution_major_version == '7'
+    - innodb_replicaset_role is defined or run_mysqlrouter is defined
+  tags:
+    - innodb-replicaset-mysql-install
+    - mysql-install
+
+- import_tasks: innodb-replicaset-mysql-configure.yml
+  when:
+    - ansible_distribution == "CentOS" or ansible_distribution == "RedHat"
+    - ansible_distribution_major_version == '7'
+    - innodb_replicaset_role is defined
+  tags:
+    - innodb-replicaset-mysql-configure
+    - mysql-configure 
+  
+- import_tasks: innodb-replicaset-secure-installation.yml
+  when:
+    - ansible_distribution == "CentOS" or ansible_distribution == "RedHat"
+    - ansible_distribution_major_version == '7'
+    - innodb_replicaset_role is defined
+  tags:
+    - innodb-replicaset-secure-installation
+    - secure-installation
+
+- import_tasks: innodb-replicaset-import-zoneinfo.yml
+  when:
+    - ansible_distribution == "CentOS" or ansible_distribution == "RedHat"
+    - ansible_distribution_major_version == '7'
+    - innodb_replicaset_role is defined and innodb_replicaset_role == "primary"
+  tags:
+    - innodb-replicaset-import-zoneinfo
+    - import-zoneinfo
+
+- import_tasks: innodb-replicaset-mysql-plugins.yml
+  when:
+    - ansible_distribution == "CentOS" or ansible_distribution == "RedHat"
+    - ansible_distribution_major_version == '7'
+    - innodb_replicaset_role is defined
+  tags:
+    - innodb-replicaset-mysql-plugins
+    - mysql-plugins
+
+- import_tasks: innodb-replicaset-create-system-users.yml
+  when:
+    - ansible_distribution == "CentOS" or ansible_distribution == "RedHat"
+    - ansible_distribution_major_version == '7'
+    - innodb_replicaset_role is defined
+  tags:
+    - innodb-replicaset-create-system-users
+    - create-system-users
+
+- import_tasks: innodb-replicaset-update-sudoers-configure.yml
+  when:
+    - ansible_distribution == "CentOS" or ansible_distribution == "RedHat"
+    - ansible_distribution_major_version == '7'
+    - innodb_replicaset_role is defined
+  tags:
+    - innodb-replicaset-update-sudoers-configure
+    - update-sudoers-configure
+
+- import_tasks: innodb-replicaset-setup-replicaset.yml
+  when:
+    - ansible_distribution == "CentOS" or ansible_distribution == "RedHat"
+    - ansible_distribution_major_version == '7'
+    - innodb_replicaset_role is defined and innodb_replicaset_role == "primary"
+  tags:
+    - innodb-replicaset-setup-replicaset
+    - setup-replicaset
+
+- import_tasks: innodb-replicaset-setup-mysqld-exporter.yml
+  when:
+    - ansible_distribution == "CentOS" or ansible_distribution == "RedHat"
+    - ansible_distribution_major_version == '7'
+    - innodb_replicaset_role is defined
+  tags:
+    - innodb-replicaset-setup-mysqld-exporter
+    - setup-mysqld-exporter
+
+- import_tasks: innodb-replicaset-create-mysql-router-rest-api-users.yml
+  when:
+    - ansible_distribution == "CentOS" or ansible_distribution == "RedHat"
+    - ansible_distribution_major_version == '7'
+    - innodb_replicaset_role is defined and innodb_replicaset_role == "primary"
+  tags:
+    - innodb-replicaset-create-mysql-router-rest-api-users
+    - create-mysql-router-rest-api-users
+
+- import_tasks: innodb-replicaset-setup-mysqlrouter.yml
+  when:
+    - ansible_distribution == "CentOS" or ansible_distribution == "RedHat"
+    - ansible_distribution_major_version == '7'
+    - run_mysqlrouter is defined and run_mysqlrouter == "yes"
+  tags:
+    - innodb-replicaset-setup-mysqlrouter
+    - setup-mysqlrouter
+
+- import_tasks: innodb-replicaset-setup-mysqlrouter-exporter.yml
+  when:
+    - ansible_distribution == "CentOS" or ansible_distribution == "RedHat"
+    - ansible_distribution_major_version == '7'
+    - run_mysqlrouter is defined and run_mysqlrouter == "yes"
+  tags:
+    - innodb-replicaset-setup-mysqlrouter-exporter
+    - setup-mysqlrouter-exporter
+
+- import_tasks: innodb-replicaset-create-application-databases.yml
+  when:
+    - ansible_distribution == "CentOS" or ansible_distribution == "RedHat"
+    - ansible_distribution_major_version == '7'
+    - innodb_replicaset_role is defined and innodb_replicaset_role == "primary"
+  tags:
+    - innodb-replicaset-create-application-databases
+    - create-application-databases
+
+- import_tasks: innodb-replicaset-create-application-users.yml
+  when:
+    - ansible_distribution == "CentOS" or ansible_distribution == "RedHat"
+    - ansible_distribution_major_version == '7'
+    - innodb_replicaset_role is defined and innodb_replicaset_role == "primary"
+  tags:
+    - innodb-replicaset-create-application-users
+    - create-application-users
+
+- import_tasks: innodb-replicaset-create-change-data-capture-users.yml
+  when:
+    - ansible_distribution == "CentOS" or ansible_distribution == "RedHat"
+    - ansible_distribution_major_version == '7'
+    - innodb_replicaset_role is defined and innodb_replicaset_role == "primary"
+  tags:
+    - innodb-replicaset-create-change-data-capture-users
+    - change-data-capture-users

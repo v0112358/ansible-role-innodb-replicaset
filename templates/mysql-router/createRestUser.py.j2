@@ -1,0 +1,87 @@
+#!/usr/bin/env python3
+#
+# Credit from https://github.com/lefred/mysqlshell-plugins
+#
+# Usage: mysqlsh --uri <user>@<host>:<port> --py -f <thisfile>
+#
+import crypt
+
+def createRestUser(rest_user_name=None, rest_user_password=None, session=None):
+  """
+  Create the MySQL Router REST API user in MySQL MetaData.
+
+  Args:
+      session (object): The optional session object used to query the
+          database. If omitted the MySQL Shell's current session will be used.
+      rest_user_name (string): The optional username.
+      rest_user_password (string): The optional password.
+  """
+
+  use_passlib = False
+  try:
+      import platform
+  except:
+      print("Error importing module platform, try:")
+      print("mysqlsh --pym pip install --user platform")
+      exit
+  if platform.system() == "Darwin":
+      try:
+          from passlib.hash import sha256_crypt
+          use_passlib = True
+      except:
+          print("Error importing module passlib, try:")
+          print("mysqlsh --pym pip install --user passlib")
+          exit
+  import mysqlsh
+  shell = mysqlsh.globals.shell
+
+  if session is None:
+      session = shell.get_session()
+      if session is None:
+          print("No session specified. Either pass a session object to this "
+                "function or connect the shell to a database")
+          return
+  # check if we are connected to a server with metadat table
+  stmt = """SELECT major FROM mysql_innodb_cluster_metadata.schema_version"""
+  result = session.run_sql(stmt)
+  if result:
+      if result.fetch_one()[0] < 2:
+          print("ERROR: this is not a valid MySQL Server, the mysql_innodb_cluster_metada is to old!")
+          return
+  else:
+          print("ERROR: this is not a valid MySQL Server, no mysql_innodb_cluster_metada found!")
+          return
+  #get the current user connected
+  if rest_user_name is not None and rest_user_password is not None:
+    username = rest_user_name
+    userpassword = rest_user_password
+  else:
+    username = shell.prompt("Enter the username: ")
+    nok=True
+    while nok:
+        userpassword = shell.prompt("Enter the password: ",{'type': 'password'})
+        userpassword_check = shell.prompt("Enter the password again: ",{'type': 'password'})
+        if userpassword == userpassword_check:
+            nok=False
+        else:
+            print("Passwords do not match, try again !")
+
+  if use_passlib:
+      crypted_pwd = sha256_crypt.hash(userpassword)
+  else:
+      crypted_pwd = crypt.crypt(userpassword, crypt.mksalt(method=crypt.METHOD_SHA256))
+
+  stmt = """select user from mysql_innodb_cluster_metadata.router_rest_accounts where user = ?"""
+  result = session.run_sql(stmt, [username])
+  if result.fetch_one_object() is not None:
+    print("The user {} is already created in MySQL Router.".format(username))
+  else:
+    stmt = """REPLACE INTO mysql_innodb_cluster_metadata.router_rest_accounts VALUES
+              ((SELECT cluster_id FROM mysql_innodb_cluster_metadata.v2_clusters LIMIT 1), ?, "modular_crypt_format",
+              ?, NULL, NULL, NULL);"""
+    result = session.run_sql(stmt,[username, crypted_pwd])
+    if result:
+      print("You can now use '{}' to authenticate to MySQL Router's REST API.".format(username))
+      print("Use myrouter=router.create(\"{}@<router IP>:8443\") to create an object to monitor.".format(username))
+
+createRestUser("{{ mysqlrouter_exporter_username }}", "{{ mysqlrouter_exporter_password }}")

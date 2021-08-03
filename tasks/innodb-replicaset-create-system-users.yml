@@ -1,0 +1,12 @@
+---
+- name: innodb-replicaset-create-system-users | Create system users
+  mysql_user:
+    login_unix_socket: "{{ percona_config.my_cnf.socket | default('/var/lib/mysql/mysql.sock') }}"
+    name: "{{ item.name }}"
+    password: "{{ item.password | default('p@ssW0rd') }}"
+    encrypted: "{{ item.encrypted | default('no') }}"
+    priv: "{{ item.priv | default('test.*:ALL') }}"
+    state: "{{ item.state | default('present') }}"
+    host: "{{ item.host | default('localhost') }}"
+  no_log: True
+  with_items: "{{ percona_server_system_users }}"
