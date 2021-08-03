@@ -22,7 +22,7 @@ Example Playbook
 ```
 ---
 - name: Deploy InnoDB ReplicaSet
-  hosts: innodb-replicaset
+  hosts: innodb_replicaset
   pre_tasks:
     - name: Verify Ansible meets InnoDB ReplicaSet requirements.
       assert:
@@ -30,7 +30,7 @@ Example Playbook
         msg: >
           "You must update Ansible to at least 2.10.0 to use this playbook"
   roles:
-    - { role: innodb-replicaset, tags: innodb-replicaset }
+    - { role: ansible-role-innodb-replicaset, tags: innodb-replicaset }
 ```
 
 Role Variables
