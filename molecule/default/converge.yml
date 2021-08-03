@@ -4,4 +4,4 @@
   become: true
 
   roles:
-    - { role: innodb-replicaset, tags: innodb-replicaset }
+    - role: innodb-replicaset
