@@ -5,13 +5,8 @@ jobs:
   test:
     runs-on: ubuntu-latest
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
-        default:
-          - lint
-          - converge
-          - verify
-          - destroy
         molecule_distro: ['centos7']
         include:
           - molecule_distro: centos7

@@ -43,7 +43,7 @@ platforms:
       - innodb-replicaset-infra
 provisioner:
   name: ansible
-  log: True
+  log: true
   ansible_args:
     - --inventory=../../tests/inventory
     - --skip-tags=update-etc-hosts
