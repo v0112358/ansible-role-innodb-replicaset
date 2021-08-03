@@ -8,6 +8,10 @@
     - innodb-replicaset-update-etc-hosts
     - update-etc-hosts
 
+- name: Print all available facts
+  ansible.builtin.debug:
+    var: ansible_facts
+
 - import_tasks: innodb-replicaset-mysql-install.yml
   # when:
   #   - ansible_distribution == "CentOS" or ansible_distribution == "RedHat"
