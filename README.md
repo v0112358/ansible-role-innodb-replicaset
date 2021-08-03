@@ -2,7 +2,7 @@
 Ansible Role: InnoDB ReplicaSet
 =========
 
-![CI](https://github.com/v0112358/ansible-role-innodb-replicaset/actions/workflows/main.yml/badge.svg) ![Ansible Role](https://img.shields.io/ansible/role/55881) ![Ansible Role](https://img.shields.io/ansible/role/d/55881) [![GitHub license](https://img.shields.io/github/license/v0112358/ansible-role-innodb-replicaset)](https://github.com/v0112358/ansible-role-innodb-replicaset/blob/master/LICENSE.md)
+![CI](https://github.com/v0112358/ansible-role-innodb-replicaset/actions/workflows/main.yml/badge.svg) ![Ansible Role](https://img.shields.io/ansible/role/d/55881) [![GitHub license](https://img.shields.io/github/license/v0112358/ansible-role-innodb-replicaset)](https://github.com/v0112358/ansible-role-innodb-replicaset/blob/master/LICENSE.md)
 
 Install and configure MySQL InnoDB ReplicaSet on your system.
 
