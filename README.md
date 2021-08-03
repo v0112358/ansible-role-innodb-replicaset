@@ -30,7 +30,7 @@ Example Playbook
         msg: >
           "You must update Ansible to at least 2.10.0 to use this playbook"
   roles:
-    - { role: ansible-role-innodb-replicaset, tags: innodb-replicaset }
+    - { role: innodb_replicaset, tags: innodb-replicaset }
 ```
 
 Role Variables
