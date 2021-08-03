@@ -9,8 +9,8 @@
   template:
     src: innodb-replicaset/percona-server-my-cnf.j2
     dest: /etc/my.cnf
-    owner: root
-    group: root
+    owner: mysql
+    group: mysql
     mode: 0644
     backup: yes
   notify: "Warning file /etc/my.cnf has been changed"
