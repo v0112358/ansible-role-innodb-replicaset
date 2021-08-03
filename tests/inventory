@@ -1,6 +1,6 @@
-[innodb-replicaset:children]
-innodb-replicaset-infra
+[innodb_replicaset:children]
+innodb_replicaset_infra
 
-[innodb-replicaset-infra]
+[innodb_replicaset_infra]
 innodb-replicaset-0               innodb_replicaset_role="primary" run_mysqlrouter="yes"
 innodb-replicaset-1               innodb_replicaset_role="secondary" run_mysqlrouter="yes"
