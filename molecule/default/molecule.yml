@@ -43,8 +43,7 @@ platforms:
       - innodb-replicaset-infra
 provisioner:
   name: ansible
-  env: 
-    MOLECULE_NO_LOG: "false"
+  log: True
   ansible_args:
     - --inventory=../../tests/inventory
     - --skip-tags=update-etc-hosts
