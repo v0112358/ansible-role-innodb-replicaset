@@ -22,8 +22,9 @@ jobs:
       - name: install dependencies
         run: |
           sudo python3 -m pip install --upgrade pip
-          sudo ls -l 
-          sudo python3 -m pip install -r requirements.txt
+          sudo ls -l
+          ansible --version
+          sudo python3 -m pip install -r v0112358/ansible-role-innodb-replicaset/requirements.txt
           ansible --version
           molecule --version
       - name: molecule
