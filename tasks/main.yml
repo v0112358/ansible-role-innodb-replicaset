@@ -8,24 +8,11 @@
     - innodb-replicaset-update-etc-hosts
     - update-etc-hosts
 
-- name: Get /github/workspace/tests/inventory
-  shell: >
-    cat /github/workspace/tests/inventory
-  register: inventory
-  changed_when: False
-
-- name: Debug ouput /github/workspace/tests/inventory
-  debug: var=inventory.stdout_lines
-
-- name: Print all available facts
-  ansible.builtin.debug:
-    var: ansible_facts
-
 - import_tasks: innodb-replicaset-mysql-install.yml
-  # when:
-  #   - ansible_distribution == "CentOS" or ansible_distribution == "RedHat"
-  #   - ansible_distribution_major_version == '7'
-  #   - innodb_replicaset_role is defined or run_mysqlrouter is defined
+  when:
+    - ansible_distribution == "CentOS" or ansible_distribution == "RedHat"
+    - ansible_distribution_major_version == '7'
+    - innodb_replicaset_role is defined or run_mysqlrouter is defined
   tags:
     - innodb-replicaset-mysql-install
     - mysql-install
