@@ -7,9 +7,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        molecule_distro: ['centos7']
-        include:
-          - molecule_distro: centos7
+        config:
+          - image: "centos"
+            tag: "7"
     steps:
       - name: checkout
         uses: actions/checkout@v2
@@ -19,16 +19,11 @@ jobs:
         run: sudo ln -s /etc/apparmor.d/usr.sbin.mysqld /etc/apparmor.d/disable/
       - name: parse apparmor for mysql
         run: sudo apparmor_parser -R /etc/apparmor.d/usr.sbin.mysqld
-      - name: install dependencies
-        run: |
-          sudo python3 -m pip install --upgrade pip
-          sudo ls -l
-          ansible --version
-          sudo python3 -m pip install -r v0112358/ansible-role-innodb-replicaset/requirements.txt
-          ansible --version
-          molecule --version
       - name: molecule
         uses: robertdebock/molecule-action@2.6.17
+        with:
+          image: ${{ matrix.config.image }}
+          tag: ${{ matrix.config.tag }}
   release:
     needs:
       - test
