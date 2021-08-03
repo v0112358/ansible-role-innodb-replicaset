@@ -21,8 +21,11 @@ jobs:
         run: sudo apparmor_parser -R /etc/apparmor.d/usr.sbin.mysqld
       - name: install dependencies
         run: |
-          python3 -m pip install --upgrade pip
-          python3 -m pip install -r requirements.txt
+          sudo python3 -m pip install --upgrade pip
+          sudo ls -l 
+          sudo python3 -m pip install -r requirements.txt
+          ansible --version
+          molecule --version
       - name: molecule
         uses: robertdebock/molecule-action@2.6.17
   release:
