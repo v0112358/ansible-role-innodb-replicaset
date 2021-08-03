@@ -4,4 +4,4 @@
   become: true
 
   roles:
-    - role: innodb-replicaset
+    - role: ansible-role-innodb-replicaset
