@@ -19,8 +19,12 @@ jobs:
         run: sudo ln -s /etc/apparmor.d/usr.sbin.mysqld /etc/apparmor.d/disable/
       - name: parse apparmor for mysql
         run: sudo apparmor_parser -R /etc/apparmor.d/usr.sbin.mysqld
+      - name: install dependencies
+        run: |
+          python3 -m pip install --upgrade pip
+          python3 -m pip install -r requirements.txt
       - name: molecule
-        uses: robertdebock/molecule-action@2.6.3
+        uses: robertdebock/molecule-action@2.6.17
   release:
     needs:
       - test
