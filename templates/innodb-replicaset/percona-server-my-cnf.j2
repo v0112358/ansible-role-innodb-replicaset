@@ -88,9 +88,11 @@ innodb_file_per_table = {{ percona_server_configuration.my_cnf.innodb_file_per_t
 innodb_flush_log_at_trx_commit = {{ percona_server_configuration.my_cnf.innodb_flush_log_at_trx_commit | default('2') }}
 
 # Extra config
+{% if percona_server_configuration.my_cnf.my_cnf_extra is defined %}
 {% for key, value in percona_server_configuration.my_cnf_extra.items() -%}
 {{ key }} = {{ value }}
 {% endfor %}
+{% endif %}
 
 [mysqld_safe]
 log_error = /var/log/mysqld.log
