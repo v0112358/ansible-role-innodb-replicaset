@@ -7,23 +7,31 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        config:
-          - image: "centos"
-            tag: "7"
+        molecule_distro: ['centos7']
     steps:
       - name: checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v1
         with:
           path: "${{ github.repository }}"
+      - name: Set up Python 3
+        uses: actions/setup-python@v1
+        with:
+          python-version: '3.x'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip3 install ansible==2.10.7 ansible-lint flake8 molecule===3.3.4 molecule-docker
+          ansible --version
+          molecule --version
       - name: disable apparmor for mysql
         run: sudo ln -s /etc/apparmor.d/usr.sbin.mysqld /etc/apparmor.d/disable/
       - name: parse apparmor for mysql
         run: sudo apparmor_parser -R /etc/apparmor.d/usr.sbin.mysqld
-      - name: molecule
-        uses: robertdebock/molecule-action@2.6.17
-        with:
-          image: ${{ matrix.config.image }}
-          tag: ${{ matrix.config.tag }}
+      - name: Test with molecule
+        run: |
+          molecule test --all
+        env:
+          MOLECULE_DISTRO: ${{ matrix.molecule_distro }}
   release:
     needs:
       - test
